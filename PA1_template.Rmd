@@ -64,7 +64,19 @@ interval <- avgStepsInterval[avgStepsInterval$average == maxAvgStepsInterval, 1]
 Interval `r interval` contains the maximum of average number of steps.  
 
 ## Imputing missing values
+```{r echo=TRUE}
+# Calculate the total number of missing values in the dataset
+totalNAs <- sum(!complete.cases(rawData))
 
+# To fill in all missing values, using the mean for these intervals should help reduce bias and can represent the whole population.
+processedData <- rawData[rawData$steps == NA & ]
 
+fillInNA <- function(x) {
+    if()
+}
+tapply(rawData$steps, list(rawData$interval), function(x) {x})
+```
+
+The total number of rows that have missing values is `r totalNAs`.
 
 ## Are there differences in activity patterns between weekdays and weekends?
