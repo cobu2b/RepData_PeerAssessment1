@@ -43,8 +43,25 @@ Mean total number of steps taken per day is `r strMeanTotalSteps`.
 Median total number of steps taken per day is `r strMedianTotalSteps`.  
 
 ## What is the average daily activity pattern?
+```{r echo=TRUE}
+avgStepsInterval <- aggregate(data$steps, by=list(data$interval), 
+                              FUN=mean)
+colnames(avgStepsInterval) <- c("interval", "average")
 
+g <- ggplot(avgStepsInterval, aes(x = interval, y = average)) 
+g <- g + geom_line()
+g <- g + labs(x = "Interval")
+g <- g + labs(y = "Average number of steps")
+g <- g + labs(title = "Interval-based average number of steps")
+print(g)
+```
 
+```{r echo=TRUE}
+maxAvgStepsInterval <- max(avgStepsInterval$average)
+interval <- avgStepsInterval[avgStepsInterval$average == maxAvgStepsInterval, 1]
+```
+
+Interval `r interval` contains the maximum of average number of steps.  
 
 ## Imputing missing values
 
