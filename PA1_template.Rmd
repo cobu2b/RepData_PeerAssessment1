@@ -67,16 +67,71 @@ Interval `r interval` contains the maximum of average number of steps.
 ```{r echo=TRUE}
 # Calculate the total number of missing values in the dataset
 totalNAs <- sum(!complete.cases(rawData))
-
-# To fill in all missing values, using the mean for these intervals should help reduce bias and can represent the whole population.
-processedData <- rawData[rawData$steps == NA & ]
-
-fillInNA <- function(x) {
-    if()
-}
-tapply(rawData$steps, list(rawData$interval), function(x) {x})
 ```
 
-The total number of rows that have missing values is `r totalNAs`.
+The total number of rows that have missing values is `r totalNAs`.  
+
+```{r echo=TRUE}
+# To fill in all missing values, using the mean for these intervals should help reduce bias and can represent the whole population.
+processedData <- rawData
+for(index in 1:nrow(processedData)) {
+    if(is.na(processedData[index, 1])) {
+        interval <- processedData[index, 3]
+        avgStep <- avgStepsInterval[avgStepsInterval$interval == interval, 2]
+        processedData[index, 1] <- avgStep
+    }
+}
+
+# Calculate the total number of steps taken each day on processed data
+totalProcessedTotalSteps <- aggregate(processedData$steps, 
+                                      by=list(processedData$date), 
+                                      FUN=sum)
+colnames(totalProcessedTotalSteps) <- c("date", "total")
+
+hist(x=totalProcessedTotalSteps$total, 
+     main="Histogram of the total number of steps on processed data", 
+     xlab="Total number of steps")
+```
+
+```{r echo=TRUE}
+# Calculate and report the mean and median total number of steps on processed data
+meanProcessedTotalSteps <- mean(totalProcessedTotalSteps$total)
+medianProcessedTotalSteps <- median(totalProcessedTotalSteps$total)
+
+# Convert to string
+strMeanProcessedTotalSteps <- paste(meanProcessedTotalSteps)
+strMedianProcessedTotalSteps <- paste(medianProcessedTotalSteps)
+```
+
+Mean total number of steps on processed data is `r strMeanProcessedTotalSteps`.  
+Median total number of steps on processed data is `r strMedianProcessedTotalSteps`.  
+
+Compared histograms of the data without NAs and filling NAs with the mean of steps in each interval, the data distribution is simialr. The median of the data filling NAs with the mean of steps in each interval is the same as the mean of the data without NAs. In conclusion, the impact of imputing missing data is not significant.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r echo=TRUE}
+# Group data into two groups: weekday and weekend
+processedData$day <- "weekday"
+for(index in 1:nrow(processedData)) {
+    day <- weekdays(processedData[index, 2])
+    if(day == "Saturday" | day == "Sunday") {
+        processedData[index, 4] <- "weekend"
+    }
+}
+processedData[, 'day'] <- as.factor(processedData[, 'day'])
+
+# Calculate the average number of steps grouped by weekday/weekend and 5-minute intervals.
+avgTotalStepsDay <- tapply(processedData$steps, 
+                           list(processedData$interval, processedData$day), 
+                           mean)
+avgTotalStepsDay <- as.data.frame(as.table(avgTotalStepsDay))
+colnames(avgTotalStepsDay) <- c("interval", "day", "average")
+
+g <- ggplot(avgTotalStepsDay, aes(x = interval, y = average))
+g <- g + geom_line(aes(group=1)) # Group all points; otherwise no line will show
+g <- g + facet_grid(day ~ .)
+g <- g + labs(x = "Interval")
+g <- g + labs(y = "Average number of steps")
+g <- g + labs(title = "Interval-based average number of steps grouped by day")
+print(g)
+```
